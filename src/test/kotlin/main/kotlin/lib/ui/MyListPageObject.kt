@@ -1,9 +1,11 @@
 package lib.ui
 
-import io.appium.java_client.AppiumDriver
+import lib.Platform
 import org.openqa.selenium.WebElement
+import org.openqa.selenium.remote.RemoteWebDriver
+import java.lang.Thread.sleep
 
-abstract class MyListPageObject(driver: AppiumDriver<WebElement>) : MainPageObject(driver) {
+abstract class MyListPageObject(driver: RemoteWebDriver) : MainPageObject(driver) {
 
     open var FOLDER_MY_NAME_TPL = ""
     open var ARTICLE_BY_TITLE_TPL = ""
@@ -12,6 +14,7 @@ abstract class MyListPageObject(driver: AppiumDriver<WebElement>) : MainPageObje
     open var FIRST_ARTICLE_IOS = ""
     open var BUTTON_DELETE_ARTICLE = ""
     open var FIRST_ARTICLE_IOS_TO_DELETE = ""
+    open var REMOVE_FROM_SAVED_BUTTON = ""
 
 
     fun getFolderXpathByName(name_of_folder: String): String {
@@ -26,9 +29,9 @@ abstract class MyListPageObject(driver: AppiumDriver<WebElement>) : MainPageObje
         return FIRST_ARTICLE_IOS.replace("{TITLE}", article_title)
     }
 
-    fun articleIsPresent(article_title: String){
+    fun articleIsPresent(article_title: String) {
         val first_article_xpath = getFirstArticleName(article_title)
-        this.waitForElementPresent(first_article_xpath,"Article not present",10)
+        this.waitForElementPresent(first_article_xpath, "Article not present", 10)
     }
 
     fun swipeAndDeleteFirstArticleIos() {
@@ -37,7 +40,7 @@ abstract class MyListPageObject(driver: AppiumDriver<WebElement>) : MainPageObje
     }
 
     fun openFirstArticleIos() {
-        this.waitForElementAndClick(FIRST_ARTICLE_IOS_TO_DELETE, "Cannot open first article",10)
+        this.waitForElementAndClick(FIRST_ARTICLE_IOS_TO_DELETE, "Cannot open first article", 10)
     }
 
     fun openFolderByName(name_of_folder: String) {
@@ -62,9 +65,28 @@ abstract class MyListPageObject(driver: AppiumDriver<WebElement>) : MainPageObje
     fun swipeByArticleToDelete(article_title: String) {
         waitForArticleToAppearByTitle(article_title)
         val article_xpath = getSavedArticleXpathByTitle(article_title)
-        this.swipeElementToLeft(article_xpath, "Cannot saved first article")
+
+        if (Platform.getInstance().isAndroid() || Platform.getInstance().isIOS()) {
+            this.swipeElementToLeft(article_xpath, "Cannot saved first article")
+
+        } else {
+            val remove_locator = getRemoveButtonByTitle(article_title)
+            sleep(2000)
+
+            this.waitForElementAndClick(remove_locator, "Cannot click button to remove article from saved", 10)
+        }
+            sleep(2000)
+
+        if (Platform.getInstance().isMW()) {
+            driver.navigate().refresh()
+        }
         this.waitForArticleToDisappearByTitle(article_title)
     }
+
+    fun getRemoveButtonByTitle(article_title: String): String {
+        return REMOVE_FROM_SAVED_BUTTON.replace("{TITLE}", article_title)
+    }
+
 
     fun waitForTitleElementFromMyListScreen(): WebElement {
         return this.waitForElementPresent(
@@ -95,4 +117,3 @@ abstract class MyListPageObject(driver: AppiumDriver<WebElement>) : MainPageObje
         )
     }
 }
-

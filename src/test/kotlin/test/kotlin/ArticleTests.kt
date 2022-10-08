@@ -10,18 +10,23 @@ import lib.ui.factories.ArticlePageObjectFactory
 import lib.ui.factories.MyListPageObjectFactory
 import lib.ui.factories.NavigationUIPageObjectFactory
 import lib.ui.factories.SearchPageObjectFactory
+import main.kotlin.lib.ui.AuthorizationPageObject
 import org.junit.Test
+import java.lang.Thread.sleep
 
 class ArticleTests : CoreTestCase() {
 
     companion object {
         val name_of_folder = "Learning programming"
+        val login = "KotlinAppium"
+        val password = "Qaz12345"
     }
 
     @Test
     fun testSaveTwoArticles() {
         val SearchPageObject: SearchPageObject = SearchPageObjectFactory.get(driver)
         val ArticlePageObject: ArticlePageObject = ArticlePageObjectFactory.get(driver)
+        val Auth: AuthorizationPageObject = AuthorizationPageObject(driver)
         val NavigationUI: NavigationUI = NavigationUIPageObjectFactory.get(driver)
         val MyListPageObject: MyListPageObject = MyListPageObjectFactory.get(driver)
 
@@ -30,7 +35,11 @@ class ArticleTests : CoreTestCase() {
         //Вводим текст
         SearchPageObject.typeSearchLine("Java")
         //Тапаем по первой статье из саджеста
-        SearchPageObject.clickByArticleWithSubstring("Object-oriented programming language")
+        SearchPageObject.clickByArticleWithSubstring("bject-oriented programming language")
+        if (Platform.getInstance().isMW()) {
+            //Необходима задержка для корректного поиска локатора и клика по нему
+            sleep(2000)
+        }
         ArticlePageObject.waitForTitleElement()
         //Получаем название статьи
         val article_title = ArticlePageObject.getArticleTitle()
@@ -40,6 +49,18 @@ class ArticleTests : CoreTestCase() {
             ArticlePageObject.addArticleToMyNewList(name_of_folder)
         } else {
             ArticlePageObject.addArticlesToMySaved()
+        }
+        if (Platform.getInstance().isMW()) {
+            sleep(2000)
+            Auth.clickAuthButton()
+            sleep(2000)
+            Auth.enterLoginData(login, password)
+            Auth.submitForm()
+            ArticlePageObject.returnToMobileVersion()
+
+            ArticlePageObject.waitForTitleElement()
+
+            assertEquals("We are not on the same page after login", article_title, ArticlePageObject.getArticleTitle())
         }
         //Закрываем статью
         ArticlePageObject.closeArticle()
@@ -52,7 +73,7 @@ class ArticleTests : CoreTestCase() {
         //Вводим текст
         SearchPageObject.typeSearchLine("Java")
         //Тапаем по другой статье
-        SearchPageObject.clickByArticleWithSubstring("High-level programming language")
+        SearchPageObject.clickByArticleWithSubstring("igh-level programming language")
         //Сохраняем ее в тот же список
         if (Platform.getInstance().isAndroid()) {
             ArticlePageObject.addArticleToExistList(name_of_folder)
@@ -64,18 +85,20 @@ class ArticleTests : CoreTestCase() {
         if (Platform.getInstance().isIOS()) {
             SearchPageObject.clickCloseSearchScreen()
         }
-        //Открываем экран списки для чтения
+        //Открываем панель навигации для mobile-web
+        NavigationUI.openNavigation()
+        //Открываем вкладку сохраненные
         NavigationUI.clickMyList()
         //Тапаем по нашему списку для Android
         if (Platform.getInstance().isAndroid()) {
             MyListPageObject.openFolderByName(name_of_folder)
-            // Закрываем модальное окно на iOS
-        } else {
+        }
+        // Закрываем модальное окно на iOS
+        if (Platform.getInstance().isIOS()) {
             MyListPageObject.clickButtonCloseSyncMyArticlesWindow()
         }
-
         //Удаляем одну статью
-        if (Platform.getInstance().isAndroid()) {
+        if (Platform.getInstance().isAndroid() || Platform.getInstance().isMW()) {
             MyListPageObject.swipeByArticleToDelete(article_title)
         } else {
             MyListPageObject.swipeAndDeleteFirstArticleIos()
@@ -88,7 +111,7 @@ class ArticleTests : CoreTestCase() {
             MyListPageObject.articleIsPresent(titleForAssert)
         }
 
-        if (Platform.getInstance().isAndroid()) {
+        if (Platform.getInstance().isAndroid() || Platform.getInstance().isMW()) {
             MyListPageObject.waitForTitleElementFromMyListScreen()
             //Сохраняем название статьи с экрана списка для чтения
             val titleFromListScreen = MyListPageObject.getArticleTitleFromMyListScreen()
@@ -99,11 +122,19 @@ class ArticleTests : CoreTestCase() {
             val titleFromArticleScreen = ArticlePageObject.getArticleTitle()
             //Сравнимаем названия статей
             assertEquals("Title not equals", titleFromListScreen, titleFromArticleScreen)
-        } else {
+        }
+        if (Platform.getInstance().isIOS()) {
             //Открываем статью
             MyListPageObject.openFirstArticleIos()
             //Проверяем что заданный заголовок
             ArticlePageObject.iOStitleIsPresent(titleForAssert)
+        }
+        //Возращаемся и удаляем последнюю статью из своего списка
+        if (Platform.getInstance().isMW()) {
+            NavigationUI.openNavigation()
+            NavigationUI.clickMyList()
+            val titleFromListScreen = MyListPageObject.getArticleTitleFromMyListScreen()
+            MyListPageObject.swipeByArticleToDelete(titleFromListScreen)
         }
     }
 
@@ -119,7 +150,7 @@ class ArticleTests : CoreTestCase() {
         //Вводим текст
         SearchPageObject.typeSearchLine("Java")
         //Тапаем по первой статье из саджеста
-        SearchPageObject.clickByArticleWithSubstring("Object-oriented programming language")
+        SearchPageObject.clickByArticleWithSubstring("bject-oriented programming language")
         if (Platform.getInstance().isIOS()) {
             ArticlePageObject.iOStitleIsPresent("Java (programming language)")
         } else {
@@ -132,7 +163,7 @@ class ArticleTests : CoreTestCase() {
         val SearchPageObject: SearchPageObject = SearchPageObjectFactory.get(driver)
         SearchPageObject.initSearchInput()
         SearchPageObject.typeSearchLine("Appium")
-        SearchPageObject.clickByArticleWithSubstring("Automation for Apps")
+        SearchPageObject.clickByArticleWithSubstring("utomation for Apps")
 
         val ArticlePageObject: ArticlePageObject = ArticlePageObjectFactory.get(driver)
         if (Platform.getInstance().isAndroid()) {

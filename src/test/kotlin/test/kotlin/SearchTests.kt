@@ -28,7 +28,7 @@ class SearchTests : CoreTestCase() {
         val SearchPageObject: SearchPageObject = SearchPageObjectFactory.get(driver)
         SearchPageObject.initSearchInput()
         SearchPageObject.typeSearchLine("Java")
-        SearchPageObject.waitForSearchResult("Object-oriented programming language")
+        SearchPageObject.waitForSearchResult("bject-oriented programming language")
     }
 
     @Test

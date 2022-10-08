@@ -1,11 +1,12 @@
 package lib.ui
 
-import io.appium.java_client.AppiumDriver
 import lib.Platform
 import org.openqa.selenium.WebElement
+import org.openqa.selenium.remote.RemoteWebDriver
+import java.lang.Thread.sleep
 
 
-abstract class ArticlePageObject(driver: AppiumDriver<WebElement>) : MainPageObject(driver) {
+abstract class ArticlePageObject(driver: RemoteWebDriver) : MainPageObject(driver) {
 
     abstract val TITLE: String
     open var TITLE_IOS_FOR_ASSERT = ""
@@ -15,9 +16,14 @@ abstract class ArticlePageObject(driver: AppiumDriver<WebElement>) : MainPageObj
     open var ADD_TO_MY_LIST_OVERLAY: String = ""
     open var MY_LIST_NAME_INPUT: String = ""
     open var MY_LIST_OK_BUTTON: String = ""
-    abstract val CLOSE_ARTICLE_BUTTON: String
+    open var CLOSE_ARTICLE_BUTTON = ""
     open var MY_READING_LIST_TPL: String = ""
+    open var OPTIONS_REMOVE_FROM_MY_LIST_BUTTON = ""
+    open var MOBILE_VERSION = ""
 
+    fun returnToMobileVersion() {
+        waitForElementAndClick(MOBILE_VERSION, "Cannot find mobile version button", 10)
+    }
 
     fun waitForTitleElement(): WebElement {
         return this.waitForElementPresent(TITLE, "Cannot find article title on page", 10)
@@ -27,29 +33,30 @@ abstract class ArticlePageObject(driver: AppiumDriver<WebElement>) : MainPageObj
         return TITLE_IOS_FOR_ASSERT.replace("{TITLE}", article_title)
     }
 
-    fun androidTitleIsPresent(){
-        this.waitForElementPresent(TITLE,"Title is not present",10)
+    fun androidTitleIsPresent() {
+        this.waitForElementPresent(TITLE, "Title is not present", 10)
     }
 
-    fun iOStitleIsPresent(article_title: String){
+    fun iOStitleIsPresent(article_title: String) {
         val first_article_xpath = getArticleName(article_title)
-        this.waitForElementPresent(first_article_xpath,"Article not present",10)
+        this.waitForElementPresent(first_article_xpath, "Article not present", 10)
     }
 
     fun getArticleTitle(): String {
         val title_element: WebElement = waitForTitleElement()
-        return if (Platform.getInstance().isAndroid())
-            title_element.text
-        else
-            title_element.tagName
+        if (Platform.getInstance().isAndroid())
+            return title_element.text
+        else if (Platform.getInstance().isIOS())
+            return title_element.tagName
+        else return title_element.text
     }
 
     fun swipeToFooter() {
         if (Platform.getInstance().isAndroid()) {
-            this.swipeUpToFindElement(FOOTER_ELEMENT, "Cannot find element", 40)
-        } else {
+            this.swipeUpToFindElement(FOOTER_ELEMENT, "Cannot find the end of article", 40)
+        } else if (Platform.getInstance().isIOS()) {
             this.swipeUpTillElementAppear(FOOTER_ELEMENT, "Cannot find the end of article", 40)
-        }
+        } else this.scrollWebPageTillElementNotVisible(FOOTER_ELEMENT, "Cannot find the end of article", 40)
     }
 
     fun addArticleToMyNewList(name_of_folder: String) {
@@ -88,7 +95,14 @@ abstract class ArticlePageObject(driver: AppiumDriver<WebElement>) : MainPageObj
     }
 
     fun closeArticle() {
-        this.waitForElementAndClick(CLOSE_ARTICLE_BUTTON, "Button close not found", 10)
+        if (Platform.getInstance().isIOS() || Platform.getInstance().isAndroid()) {
+            this.waitForElementAndClick(CLOSE_ARTICLE_BUTTON, "Button close not found", 10)
+        } else {
+            print(
+                "Method closeArticle() does nothing for platform " + Platform.getInstance().getPlatformVar()
+            )
+        }
+
     }
 
     fun checkTitlePresentWithoutTimeout() {
@@ -96,6 +110,25 @@ abstract class ArticlePageObject(driver: AppiumDriver<WebElement>) : MainPageObj
     }
 
     fun addArticlesToMySaved() {
+        if (Platform.getInstance().isMW()) {
+            this.removeArticleFromSavedIfItAdded()
+        }
         waitForElementAndClick(OPTIONS_ADD_TO_MY_LIST_BUTTON, "Cannot find option to add article to reading list", 10)
+    }
+
+    fun removeArticleFromSavedIfItAdded() {
+        if (this.isElementPresent(OPTIONS_REMOVE_FROM_MY_LIST_BUTTON)) {
+            this.waitForElementAndClick(
+                OPTIONS_REMOVE_FROM_MY_LIST_BUTTON,
+                "Cannot click button to remove an article from saved",
+                10
+            )
+        }
+        sleep(2000)
+        this.waitForElementPresent(
+            OPTIONS_ADD_TO_MY_LIST_BUTTON,
+            "Cannot find button to add an article to saved list after removing it from this list before",
+            10
+        )
     }
 }
