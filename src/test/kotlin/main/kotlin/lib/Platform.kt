@@ -1,10 +1,12 @@
 package lib
 
-import io.appium.java_client.AppiumDriver
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
 import org.openqa.selenium.WebElement
+import org.openqa.selenium.chrome.ChromeDriver
+import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.remote.DesiredCapabilities
+import org.openqa.selenium.remote.RemoteWebDriver
 import java.net.URL
 
 open class Platform {
@@ -12,6 +14,7 @@ open class Platform {
     companion object {
         const val PLATFORM_IOS = "ios"
         const val PLATFORM_ANDROID = "android"
+        const val PLATFORM_MOBILE_WEB = "mobile_web"
         const val APPIUM_URL = "http://127.0.0.1:4723/wd/hub"
         var instance: Platform? = null
 
@@ -25,10 +28,11 @@ open class Platform {
         }
     }
 
-    fun getDriver(): AppiumDriver<WebElement> {
+    fun getDriver(): RemoteWebDriver {
         val URL = URL(APPIUM_URL)
-        if (this.isAndroid()) return AndroidDriver(URL, this.getAndroidDesiredCapabilities())
-        else if (this.isIOS()) return IOSDriver(URL, this.getIOSDesiredCapabilities())
+        if (this.isAndroid()) return AndroidDriver<WebElement>(URL, this.getAndroidDesiredCapabilities())
+        else if (this.isIOS()) return IOSDriver<WebElement>(URL, this.getIOSDesiredCapabilities())
+        else if (this.isMW()) return ChromeDriver(this.getMWChromeOptions())
         else throw Exception("Cannot detect type of the Driver. Platform value: " + this.getPlatformVar())
     }
 
@@ -38,6 +42,10 @@ open class Platform {
 
     fun isIOS(): Boolean {
         return isPlatform(PLATFORM_IOS)
+    }
+
+    fun isMW(): Boolean {
+        return isPlatform(PLATFORM_MOBILE_WEB)
     }
 
     private fun getAndroidDesiredCapabilities(): DesiredCapabilities {
@@ -67,12 +75,31 @@ open class Platform {
         return capabilities
     }
 
+    private fun getMWChromeOptions(): ChromeOptions {
+        var deviceMetrics = mutableMapOf<String, Any?>()
+        deviceMetrics.put("width", 360)
+        deviceMetrics.put("height", 640)
+        deviceMetrics.put("pixelRatio", 3.0)
+
+        var mobileEmulation = mutableMapOf<String, Any?>()
+        mobileEmulation.put("deviceMetrics", deviceMetrics)
+        mobileEmulation.put(
+            "userAgent",
+            "Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19"
+        )
+
+        val chromeOptions: ChromeOptions = ChromeOptions()
+        chromeOptions.addArguments("window-size=340,640")
+
+        return chromeOptions
+    }
+
     private fun isPlatform(my_platform: String): Boolean {
         val platform = this.getPlatformVar()
         return my_platform == platform
     }
 
-    private fun getPlatformVar(): String {
+    open fun getPlatformVar(): String {
         return System.getenv("PLATFORM")
     }
 }
