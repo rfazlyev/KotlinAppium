@@ -1,5 +1,6 @@
 package lib.ui
 
+import io.qameta.allure.Step
 import lib.Platform
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.RemoteWebDriver
@@ -21,29 +22,36 @@ abstract class ArticlePageObject(driver: RemoteWebDriver) : MainPageObject(drive
     open var OPTIONS_REMOVE_FROM_MY_LIST_BUTTON = ""
     open var MOBILE_VERSION = ""
 
+    @Step("Return to mobile version(just for mobile web)")
     fun returnToMobileVersion() {
         waitForElementAndClick(MOBILE_VERSION, "Cannot find mobile version button", 10)
     }
 
+    @Step("Wait for title element")
     fun waitForTitleElement(): WebElement {
         return this.waitForElementPresent(TITLE, "Cannot find article title on page", 10)
     }
 
+    @Step("Get text from article title(just for iOS)")
     fun getArticleName(article_title: String): String {
         return TITLE_IOS_FOR_ASSERT.replace("{TITLE}", article_title)
     }
 
+    @Step("Title is present(just for Android)")
     fun androidTitleIsPresent() {
         this.waitForElementPresent(TITLE, "Title is not present", 10)
     }
 
+    @Step("Title is present(just for iOS)")
     fun iOStitleIsPresent(article_title: String) {
         val first_article_xpath = getArticleName(article_title)
         this.waitForElementPresent(first_article_xpath, "Article not present", 10)
     }
 
+    @Step("Get article title")
     fun getArticleTitle(): String {
         val title_element: WebElement = waitForTitleElement()
+        screenshot(this.takeScreenshot("article_title"))
         if (Platform.getInstance().isAndroid())
             return title_element.text
         else if (Platform.getInstance().isIOS())
@@ -51,6 +59,7 @@ abstract class ArticlePageObject(driver: RemoteWebDriver) : MainPageObject(drive
         else return title_element.text
     }
 
+    @Step("Swipe to footer")
     fun swipeToFooter() {
         if (Platform.getInstance().isAndroid()) {
             this.swipeUpToFindElement(FOOTER_ELEMENT, "Cannot find the end of article", 40)
@@ -59,6 +68,7 @@ abstract class ArticlePageObject(driver: RemoteWebDriver) : MainPageObject(drive
         } else this.scrollWebPageTillElementNotVisible(FOOTER_ELEMENT, "Cannot find the end of article", 40)
     }
 
+    @Step("Add article to my new list")
     fun addArticleToMyNewList(name_of_folder: String) {
 
         this.waitForElementAndClick(OPTIONS_BUTTON, "Options button not found", 10)
@@ -87,6 +97,7 @@ abstract class ArticlePageObject(driver: RemoteWebDriver) : MainPageObject(drive
         return MY_READING_LIST_TPL.replace("{MY_READING_LIST_NAME}", name_of_folder)
     }
 
+    @Step("Add article to exist list")
     fun addArticleToExistList(name_of_folder: String) {
         val name_of_folder = getMyListXpathByName(name_of_folder)
         this.waitForElementAndClick(OPTIONS_BUTTON, "Options button not found", 10)
@@ -94,6 +105,7 @@ abstract class ArticlePageObject(driver: RemoteWebDriver) : MainPageObject(drive
         this.waitForElementAndClick(name_of_folder, "Reading list not found", 10)
     }
 
+    @Step("Close article in mobile platform")
     fun closeArticle() {
         if (Platform.getInstance().isIOS() || Platform.getInstance().isAndroid()) {
             this.waitForElementAndClick(CLOSE_ARTICLE_BUTTON, "Button close not found", 10)
@@ -109,6 +121,7 @@ abstract class ArticlePageObject(driver: RemoteWebDriver) : MainPageObject(drive
         assertElementPresentWithoutTimeout(TITLE, "title not found")
     }
 
+    @Step("Add article to my saved in mobile web")
     fun addArticlesToMySaved() {
         if (Platform.getInstance().isMW()) {
             this.removeArticleFromSavedIfItAdded()
@@ -116,6 +129,8 @@ abstract class ArticlePageObject(driver: RemoteWebDriver) : MainPageObject(drive
         waitForElementAndClick(OPTIONS_ADD_TO_MY_LIST_BUTTON, "Cannot find option to add article to reading list", 10)
     }
 
+
+    @Step("Remove article from saved-list if it added")
     fun removeArticleFromSavedIfItAdded() {
         if (this.isElementPresent(OPTIONS_REMOVE_FROM_MY_LIST_BUTTON)) {
             this.waitForElementAndClick(

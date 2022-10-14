@@ -1,5 +1,6 @@
 package lib.ui
 
+import io.qameta.allure.Step
 import lib.Platform
 import org.openqa.selenium.remote.RemoteWebDriver
 
@@ -8,6 +9,7 @@ abstract class NavigationUI(driver: RemoteWebDriver) : MainPageObject(driver) {
     abstract val MY_LIST_LINK: String
     open var OPEN_NAVIGATION = ""
 
+    @Step("Click my list")
     fun clickMyList() {
         if (Platform.getInstance().isMW()) {
             this.tryClickElementWithFewAttempts(MY_LIST_LINK, "Button 'My Lists' not found", 10)
@@ -16,6 +18,7 @@ abstract class NavigationUI(driver: RemoteWebDriver) : MainPageObject(driver) {
         }
     }
 
+    @Step("Open navigation sidebar")
     fun openNavigation() {
         if (Platform.getInstance().isMW()) {
             waitForElementAndClick(OPEN_NAVIGATION, "Cannot find and click open navigation button", 10)

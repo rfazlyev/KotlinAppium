@@ -16,9 +16,9 @@ open class Platform {
         const val PLATFORM_ANDROID = "android"
         const val PLATFORM_MOBILE_WEB = "mobile_web"
         const val APPIUM_URL = "http://127.0.0.1:4723/wd/hub"
-        var instance: Platform? = null
+        private var instance: Platform? = null
 
-        @JvmName("getInstance1")
+
         fun getInstance(): Platform {
 
             return if (instance == null) {

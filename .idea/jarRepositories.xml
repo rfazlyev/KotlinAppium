@@ -47,6 +47,11 @@
       <option name="url" value="https://repo1.maven.org/maven2" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="jcenter" />
+      <option name="name" value="jcenter" />
+      <option name="url" value="https://jcenter.bintray.com" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="sql_client" />
       <option name="name" value="sql_client" />
       <option name="url" value="https://maven.pkg.github.com/indriver/sql-executor-client" />

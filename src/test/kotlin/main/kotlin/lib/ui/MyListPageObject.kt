@@ -1,5 +1,6 @@
 package lib.ui
 
+import io.qameta.allure.Step
 import lib.Platform
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.RemoteWebDriver
@@ -17,6 +18,7 @@ abstract class MyListPageObject(driver: RemoteWebDriver) : MainPageObject(driver
     open var REMOVE_FROM_SAVED_BUTTON = ""
 
 
+    @Step("Get folder name {name_of_folder}")
     fun getFolderXpathByName(name_of_folder: String): String {
         return FOLDER_MY_NAME_TPL.replace("{FOLDER_NAME}", name_of_folder)
     }
@@ -25,29 +27,36 @@ abstract class MyListPageObject(driver: RemoteWebDriver) : MainPageObject(driver
         return ARTICLE_BY_TITLE_TPL.replace("{TITLE}", article_title)
     }
 
+    @Step("Get first article name on iOS - {article_title}")
     fun getFirstArticleName(article_title: String): String {
         return FIRST_ARTICLE_IOS.replace("{TITLE}", article_title)
     }
 
+
+    @Step("Check that article is present")
     fun articleIsPresent(article_title: String) {
         val first_article_xpath = getFirstArticleName(article_title)
         this.waitForElementPresent(first_article_xpath, "Article not present", 10)
     }
 
+    @Step("Delete first article on iOS")
     fun swipeAndDeleteFirstArticleIos() {
         this.swipeElementToLeft(FIRST_ARTICLE_IOS_TO_DELETE, "Cannot find first article")
         this.waitForElementAndClick(BUTTON_DELETE_ARTICLE, "Cannot delete first article", 10)
     }
 
+    @Step("Open first article in iOS")
     fun openFirstArticleIos() {
         this.waitForElementAndClick(FIRST_ARTICLE_IOS_TO_DELETE, "Cannot open first article", 10)
     }
 
+    @Step("Open folder by name")
     fun openFolderByName(name_of_folder: String) {
         val folder_name_xpath = getFolderXpathByName(name_of_folder)
         this.waitForElementAndClick(folder_name_xpath, "Cannot find folder by name $name_of_folder", 10)
     }
 
+    @Step("Wait for article to disappear")
     fun waitForArticleToDisappearByTitle(article_title: String) {
         val article_xpath = getSavedArticleXpathByTitle(article_title)
         this.waitForElementNotPresent(
@@ -57,11 +66,13 @@ abstract class MyListPageObject(driver: RemoteWebDriver) : MainPageObject(driver
         )
     }
 
+    @Step("Wait for article to appear")
     fun waitForArticleToAppearByTitle(article_title: String) {
         val article_xpath = getSavedArticleXpathByTitle(article_title)
         this.waitForElementPresent(article_xpath, "Cannot find article by title $article_title", 10)
     }
 
+    @Step("Delete article")
     fun swipeByArticleToDelete(article_title: String) {
         waitForArticleToAppearByTitle(article_title)
         val article_xpath = getSavedArticleXpathByTitle(article_title)
@@ -96,11 +107,13 @@ abstract class MyListPageObject(driver: RemoteWebDriver) : MainPageObject(driver
         )
     }
 
+    @Step("Get text from article title on my list screen")
     fun getArticleTitleFromMyListScreen(): String {
         val title_element: WebElement = waitForTitleElementFromMyListScreen()
         return title_element.text
     }
 
+    @Step("Open first article from my list screen")
     fun openFirstArticleFromMyListScreen() {
         this.waitForElementAndClick(
             FIRST_ARTICLE_ON_MY_LIST_SCREEN,
@@ -109,6 +122,7 @@ abstract class MyListPageObject(driver: RemoteWebDriver) : MainPageObject(driver
         )
     }
 
+    @Step("Close window about sync my articles")
     fun clickButtonCloseSyncMyArticlesWindow() {
         this.waitForElementAndClick(
             BUTTON_CLOSE_SYNC_MY_ARTICLES,

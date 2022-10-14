@@ -1,16 +1,17 @@
 package test.kotlin
 
+import io.qameta.allure.*
+import io.qameta.allure.junit4.DisplayName
 import lib.CoreTestCase
 import lib.Platform
-import lib.ui.ArticlePageObject
-import lib.ui.MyListPageObject
-import lib.ui.NavigationUI
-import lib.ui.SearchPageObject
+import lib.ui.*
+import lib.ui.MainPageObject.Companion.screenshot
 import lib.ui.factories.ArticlePageObjectFactory
 import lib.ui.factories.MyListPageObjectFactory
 import lib.ui.factories.NavigationUIPageObjectFactory
 import lib.ui.factories.SearchPageObjectFactory
 import main.kotlin.lib.ui.AuthorizationPageObject
+import org.junit.Assert
 import org.junit.Test
 import java.lang.Thread.sleep
 
@@ -23,6 +24,9 @@ class ArticleTests : CoreTestCase() {
     }
 
     @Test
+    @DisplayName("Save two articles")
+    @Description("We save two articles and then delete one of them")
+    @Step("Starting testSaveTwoArticles")
     fun testSaveTwoArticles() {
         val SearchPageObject: SearchPageObject = SearchPageObjectFactory.get(driver)
         val ArticlePageObject: ArticlePageObject = ArticlePageObjectFactory.get(driver)
@@ -60,7 +64,7 @@ class ArticleTests : CoreTestCase() {
 
             ArticlePageObject.waitForTitleElement()
 
-            assertEquals("We are not on the same page after login", article_title, ArticlePageObject.getArticleTitle())
+            Assert.assertEquals("We are not on the same page after login", article_title, ArticlePageObject.getArticleTitle())
         }
         //Закрываем статью
         ArticlePageObject.closeArticle()
@@ -121,7 +125,7 @@ class ArticleTests : CoreTestCase() {
             ArticlePageObject.waitForTitleElement()
             val titleFromArticleScreen = ArticlePageObject.getArticleTitle()
             //Сравнимаем названия статей
-            assertEquals("Title not equals", titleFromListScreen, titleFromArticleScreen)
+            Assert.assertEquals("Title not equals", titleFromListScreen, titleFromArticleScreen)
         }
         if (Platform.getInstance().isIOS()) {
             //Открываем статью
@@ -139,6 +143,11 @@ class ArticleTests : CoreTestCase() {
     }
 
     @Test
+    @Feature(value = "Title")
+    @DisplayName("Article title is present")
+    @Description("We check that article has title")
+    @Step("Starting testTitleIsPresent")
+    @Severity(value = SeverityLevel.BLOCKER)
     fun testTitleIsPresent() {
         val SearchPageObject: SearchPageObject = SearchPageObjectFactory.get(driver)
         val ArticlePageObject: ArticlePageObject = ArticlePageObjectFactory.get(driver)
@@ -159,11 +168,16 @@ class ArticleTests : CoreTestCase() {
     }
 
     @Test
+    @Features(Feature(value = "Swipe"),Feature(value = "Search") )
+    @DisplayName("Swipe article to the footer")
+    @Description("We open an article and swipe it to the footer")
+    @Step("Starting testSwipeUp")
     fun testSwipeUp() {
         val SearchPageObject: SearchPageObject = SearchPageObjectFactory.get(driver)
         SearchPageObject.initSearchInput()
         SearchPageObject.typeSearchLine("Appium")
         SearchPageObject.clickByArticleWithSubstring("utomation for Apps")
+
 
         val ArticlePageObject: ArticlePageObject = ArticlePageObjectFactory.get(driver)
         if (Platform.getInstance().isAndroid()) {
